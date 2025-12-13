@@ -63,6 +63,13 @@
         }
       ]
     },
+    "linux": {
+      "target": [
+        "AppImage",
+        "tar.gz"
+      ],
+      "category": "AudioVideo;Audio;Video;Utility"
+    },
     "extraResources": [
       {
         "from": "../reaper-scripts",
