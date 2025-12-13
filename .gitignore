@@ -1,0 +1,45 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Logs
+*.log
+
+# Node / Electron
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.env
+.env.*
+
+# Build outputs (Electron app)
+electron-app/dist/
+electron-app/release/
+electron-app/build/icon.ico
+
+# CMake / native build outputs (REAPER extension)
+reaper-extension/build/
+reaper-extension/dist/*
+!reaper-extension/dist/.gitkeep
+
+# Binaries / artifacts
+*.exe
+*.msi
+*.dll
+*.pdb
+*.lib
+*.exp
+*.obj
+*.iobj
+*.ipdb
+*.ilk
+*.dylib
+*.so
+
