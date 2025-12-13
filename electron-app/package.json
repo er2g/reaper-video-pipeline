@@ -12,9 +12,9 @@
     "build:main": "tsc -p tsconfig.main.json",
     "build:renderer": "vite build",
     "start": "electron .",
-    "gen:icon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/gen-icon.ps1",
+    "gen:icons": "node scripts/gen-icons.js",
     "ping:reaper": "node scripts/ping-reaper.js",
-    "predist": "npm run gen:icon",
+    "predist": "npm run gen:icons",
     "dist": "npm run build && electron-builder"
   },
   "dependencies": {
@@ -40,14 +40,28 @@
   "build": {
     "appId": "com.reaper.videofx",
     "productName": "REAPER Video FX",
-    "icon": "build/icon.ico",
     "directories": {
       "output": "release"
     },
     "files": [
       "dist/**/*"
     ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "tar.gz"
+      ],
+      "category": "AudioVideo;Audio;Video;Utility",
+      "icon": "build/icon.png"
+    },
+    "extraResources": [
+      {
+        "from": "../reaper-scripts",
+        "to": "reaper-scripts"
+      }
+    ],
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -61,24 +75,13 @@
             "x64"
           ]
         }
-      ]
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "tar.gz"
       ],
-      "category": "AudioVideo;Audio;Video;Utility"
-    },
-    "extraResources": [
-      {
-        "from": "../reaper-scripts",
-        "to": "reaper-scripts"
-      },
-      {
-        "from": "../reaper-extension/dist",
-        "to": "reaper-extension"
-      }
-    ]
+      "extraResources": [
+        {
+          "from": "../reaper-extension/dist",
+          "to": "reaper-extension"
+        }
+      ]
+    }
   }
 }
