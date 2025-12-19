@@ -1,0 +1,8 @@
+#!/bin/bash
+# Create minimal valid 1x1 PNG (cyan color)
+# This is a valid PNG that systems can scale
+printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\xcf\xc0\x00\x00\x00\x03\x00\x01\x00\x05\xfe\xd4\xb4\x00\x00\x00\x00IEND\xaeB`\x82' > 32x32.png
+cp 32x32.png 128x128.png
+cp 32x32.png "128x128@2x.png"
+cp 32x32.png icon.icns
+cp 32x32.png icon.ico
