@@ -55,6 +55,41 @@ pub struct ExtensionStatus {
     pub bundled_available: bool,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct AppConfig {
+    pub custom_reaper_plugins_dir: Option<String>,
+}
+
+fn get_config_path() -> PathBuf {
+    if let Some(config_dir) = dirs::config_dir() {
+        config_dir.join("reaper-video-fx").join("config.json")
+    } else {
+        PathBuf::from("config.json")
+    }
+}
+
+fn load_config() -> AppConfig {
+    let config_path = get_config_path();
+    if config_path.exists() {
+        if let Ok(content) = fs::read_to_string(&config_path) {
+            if let Ok(config) = serde_json::from_str(&content) {
+                return config;
+            }
+        }
+    }
+    AppConfig::default()
+}
+
+fn save_config(config: &AppConfig) -> Result<(), String> {
+    let config_path = get_config_path();
+    if let Some(parent) = config_path.parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    let content = serde_json::to_string_pretty(config).map_err(|e| e.to_string())?;
+    fs::write(&config_path, content).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 fn get_comm_dir() -> PathBuf {
     std::env::temp_dir().join("reaper-video-fx")
 }
@@ -118,6 +153,16 @@ async fn send_reaper_command(command: serde_json::Value) -> Result<ReaperRespons
 }
 
 fn get_reaper_user_plugins_dir() -> Option<PathBuf> {
+    // First check for custom path in config
+    let config = load_config();
+    if let Some(custom_path) = config.custom_reaper_plugins_dir {
+        let path = PathBuf::from(custom_path);
+        if path.exists() {
+            return Some(path);
+        }
+    }
+
+    // Fall back to default detection
     #[cfg(windows)]
     {
         if let Some(appdata) = dirs::config_dir() {
@@ -155,10 +200,13 @@ fn get_bundled_dll_path() -> Option<PathBuf> {
                 return Some(resource_path);
             }
             // Check in parent's reaper-extension/dist (development)
+            // exe_path: tauri-app/src-tauri/target/debug/reaper-video-fx.exe
+            // We need to go up to repo root: debug -> target -> src-tauri -> tauri-app -> repo-root
             let dev_path = exe_dir
-                .parent()
-                .and_then(|p| p.parent())
-                .and_then(|p| p.parent())
+                .parent()  // target
+                .and_then(|p| p.parent())  // src-tauri
+                .and_then(|p| p.parent())  // tauri-app
+                .and_then(|p| p.parent())  // repo root
                 .map(|p| p.join("reaper-extension").join("dist").join("reaper_video_fx_bridge.dll"));
             if let Some(path) = dev_path {
                 if path.exists() {
@@ -168,14 +216,20 @@ fn get_bundled_dll_path() -> Option<PathBuf> {
         }
     }
     // Fallback: check relative to current working directory
-    let cwd_path = std::env::current_dir()
-        .ok()
-        .map(|p| p.parent().unwrap_or(&p).join("reaper-extension").join("dist").join("reaper_video_fx_bridge.dll"));
-    if let Some(path) = cwd_path {
-        if path.exists() {
-            return Some(path);
+    // In dev, cwd is usually tauri-app/
+    if let Ok(cwd) = std::env::current_dir() {
+        let paths_to_try = vec![
+            cwd.join("..").join("reaper-extension").join("dist").join("reaper_video_fx_bridge.dll"),
+            cwd.join("reaper-extension").join("dist").join("reaper_video_fx_bridge.dll"),
+        ];
+
+        for path in paths_to_try {
+            if path.exists() {
+                return Some(path);
+            }
         }
     }
+
     None
 }
 
@@ -405,6 +459,40 @@ fn merge_audio_video(video_path: &str, audio_path: &str, output_path: &str, sett
     Ok(())
 }
 
+#[tauri::command]
+fn get_config() -> AppConfig {
+    load_config()
+}
+
+#[tauri::command]
+fn set_reaper_plugins_dir(path: String) -> Result<String, String> {
+    let path_buf = PathBuf::from(&path);
+
+    // Validate that the path exists
+    if !path_buf.exists() {
+        return Err("Belirtilen dizin bulunamadi".to_string());
+    }
+
+    let mut config = load_config();
+    config.custom_reaper_plugins_dir = Some(path.clone());
+    save_config(&config)?;
+
+    Ok(path)
+}
+
+#[tauri::command]
+fn get_reaper_paths() -> serde_json::Value {
+    let config = load_config();
+    let detected_path = get_reaper_user_plugins_dir();
+    let detected_str = detected_path.as_ref().map(|p| p.to_string_lossy().to_string());
+
+    serde_json::json!({
+        "custom_path": config.custom_reaper_plugins_dir,
+        "detected_path": detected_str.clone(),
+        "current_path": detected_str
+    })
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -417,6 +505,9 @@ pub fn run() {
             check_extension_status,
             install_extension,
             process_video,
+            get_config,
+            set_reaper_plugins_dir,
+            get_reaper_paths,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

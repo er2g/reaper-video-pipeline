@@ -19,6 +19,12 @@ interface ExtensionStatus {
   bundled_available: boolean;
 }
 
+interface ReaperPaths {
+  custom_path: string | null;
+  detected_path: string | null;
+  current_path: string | null;
+}
+
 interface RenderSettings {
   video_codec: string;
   video_bitrate: string;
@@ -45,6 +51,8 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [extensionStatus, setExtensionStatus] = useState<ExtensionStatus | null>(null);
+  const [reaperPaths, setReaperPaths] = useState<ReaperPaths | null>(null);
+  const [showPathSettings, setShowPathSettings] = useState(false);
   const [installing, setInstalling] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings] = useState<RenderSettings>(defaultSettings);
@@ -58,6 +66,33 @@ function App() {
       console.error("Extension check failed:", e);
     }
   }, []);
+
+  // Load REAPER paths
+  const loadReaperPaths = useCallback(async () => {
+    try {
+      const paths = await invoke<ReaperPaths>("get_reaper_paths");
+      setReaperPaths(paths);
+    } catch (e) {
+      console.error("Failed to load REAPER paths:", e);
+    }
+  }, []);
+
+  // Select REAPER plugins directory
+  const selectReaperPluginsDir = async () => {
+    try {
+      const path = await open({
+        directory: true,
+        multiple: false,
+      });
+      if (path && typeof path === "string") {
+        await invoke("set_reaper_plugins_dir", { path });
+        await loadReaperPaths();
+        await checkExtension();
+      }
+    } catch (e) {
+      console.error("Failed to select REAPER plugins directory:", e);
+    }
+  };
 
   // Check REAPER connection
   const checkReaperConnection = useCallback(async () => {
@@ -148,10 +183,11 @@ function App() {
   // Effects
   useEffect(() => {
     checkExtension();
+    loadReaperPaths();
     checkReaperConnection();
     const interval = setInterval(checkReaperConnection, 5000);
     return () => clearInterval(interval);
-  }, [checkExtension, checkReaperConnection]);
+  }, [checkExtension, checkReaperConnection, loadReaperPaths]);
 
   useEffect(() => {
     const unlisten = listen<ProgressEvent>("progress", (event) => {
@@ -229,55 +265,84 @@ function App() {
                 </p>
               </div>
             </div>
-            {!extensionStatus?.installed && extensionStatus?.bundled_available && (
+            <div className="flex items-center gap-3">
               <button
-                onClick={installExtension}
-                disabled={installing}
-                className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:from-slate-600 disabled:to-slate-700 rounded-xl font-medium text-white transition-all duration-200 flex items-center gap-2"
+                onClick={() => setShowPathSettings(!showPathSettings)}
+                className={`p-2.5 rounded-xl transition-all duration-200 ${
+                  showPathSettings
+                    ? "bg-slate-700 text-cyan-400"
+                    : "text-slate-400 hover:text-slate-300 hover:bg-slate-700/50"
+                }`}
+                title="Yol Ayarlari"
               >
-                {installing ? (
-                  <>
-                    <svg
-                      className="animate-spin w-4 h-4"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    Kuruluyor...
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                      />
-                    </svg>
-                    Tek Tikla Kur
-                  </>
-                )}
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
               </button>
-            )}
+              {!extensionStatus?.installed &&
+                extensionStatus?.bundled_available && (
+                  <button
+                    onClick={installExtension}
+                    disabled={installing}
+                    className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:from-slate-600 disabled:to-slate-700 rounded-xl font-medium text-white transition-all duration-200 flex items-center gap-2"
+                  >
+                    {installing ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        Kuruluyor...
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                          />
+                        </svg>
+                        Tek Tikla Kur
+                      </>
+                    )}
+                  </button>
+                )}
+            </div>
           </div>
           {extensionStatus?.path && (
             <p className="mt-3 text-xs text-slate-500 truncate">
@@ -285,6 +350,61 @@ function App() {
             </p>
           )}
         </div>
+
+        {/* REAPER Path Settings Panel */}
+        {(showPathSettings || !extensionStatus?.installed) && (
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/50 animate-fadeIn space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-white flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-cyan-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                  />
+                </svg>
+                REAPER Klasor Ayarlari
+              </h3>
+              {!reaperPaths?.current_path && (
+                <span className="px-2 py-1 bg-amber-500/10 border border-amber-500/30 rounded text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                  Yol Tespit Edilemedi
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                  REAPER UserPlugins Dizini
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-300 truncate font-mono">
+                    {reaperPaths?.current_path || "Klasor secilmedi..."}
+                  </div>
+                  <button
+                    onClick={selectReaperPluginsDir}
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium transition-colors"
+                  >
+                    Sec
+                  </button>
+                </div>
+                {!reaperPaths?.current_path && (
+                  <p className="mt-2 text-xs text-amber-400/80 leading-relaxed">
+                    Extension'in kurulabilmesi icin REAPER'in UserPlugins
+                    klasorunu manuel olarak secmelisiniz. Genellikle
+                    "AppData/Roaming/REAPER/UserPlugins" konumundadir.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* REAPER Connection Status */}
         <div

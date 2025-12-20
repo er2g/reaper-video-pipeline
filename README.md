@@ -1,156 +1,252 @@
-# REAPER Video FX
+# 🎬 REAPER Video FX
 
-REAPER içindeki FX chain’i kullanarak videoların sesini işleyen bir Windows uygulaması.
+> Process video audio through REAPER's powerful FX chain
 
-Uygulama:
-1) Videodan sesi çıkarır (FFmpeg).
-2) Sesi REAPER’a yükler.
-3) Seçtiğin track’i (üzerindeki FX’lerle) render alır.
-4) Render edilen sesi tekrar videoya gömer.
+<div align="center">
 
-Bu repo iki parçadan oluşur:
-- **Electron uygulaması**: `reaper-video-fx/electron-app`
-- **REAPER bridge (native extension)**: `reaper-video-fx/reaper-extension` (REAPER SDK ile)
+![REAPER Video FX](screenshots/app-screenshot.png)
 
-Alternatif/geri-dönüş olarak Lua bridge de var: `reaper-video-fx/reaper-scripts/video_fx_bridge.lua`.
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)](https://github.com/er2g/reaper-video-fx)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri-orange)](https://tauri.app)
+
+[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Development](#development) • [Türkçe](#turkish)
+
+</div>
 
 ---
+
+## ✨ Features
+
+- **Seamless REAPER Integration** - Process video audio using your favorite REAPER FX plugins
+- **One-Click Extension Install** - Automatic REAPER extension installation
+- **Manual Path Selection** - Custom REAPER plugins directory support
+- **Real-time Progress** - Live feedback during video processing
+- **Flexible Export** - Configurable audio/video codecs and bitrates
+- **Cross-platform** - Works on Windows, macOS, and Linux
+
+## 🎯 How It Works
+
+1. **Extract** audio from video using FFmpeg
+2. **Load** audio into REAPER project
+3. **Render** track with your FX chain applied
+4. **Merge** processed audio back into video
+
+## 📦 Installation
+
+### Windows
+
+Download and install the latest release:
+
+- **MSI Installer**: \`REAPER Video FX_1.0.0_x64_en-US.msi\` (Recommended)
+- **NSIS Installer**: \`REAPER Video FX_1.0.0_x64-setup.exe\`
+
+**REAPER Extension** will be installed automatically on first run, or you can:
+- Click the "One-Click Install" button in the app
+- Manually copy \`reaper_video_fx_bridge.dll\` to \`%APPDATA%\REAPER\UserPlugins\`
+
+### macOS / Linux
+
+Build from source (see [Development](#development) section)
+
+## 🚀 Usage
+
+1. **Launch REAPER** with your desired FX chain on a track
+2. **Open REAPER Video FX** application
+3. **Select Video** - Choose your video file
+4. **Select Track** - Pick the REAPER track with your FX
+5. **Process** - Click "Process" and wait for completion
+
+Output will be saved as \`{original_name}_processed.mp4\` in the same directory.
+
+## 🎛️ Advanced Settings
+
+Click the ⚙️ settings icon to configure:
+- **REAPER Plugins Directory** - Manual path selection if auto-detection fails
+- **Video Codec** - Default: Copy (no re-encode)
+- **Audio Codec** - Default: AAC 320kbps
+- **Sample Rate** - Default: 48kHz
+
+## 🛠️ Development
+
+### Prerequisites
+
+- **Windows 10/11** (macOS and Linux supported)
+- **REAPER** (tested on 7.49+)
+- **Node.js** 18+ and npm
+- **Rust** and Cargo
+- **FFmpeg** (must be in PATH)
+- **Visual Studio 2022 Build Tools** (Windows only, for C++ extension)
+- **CMake** (for building REAPER extension)
+
+### Build REAPER Extension
+
+\`\`\`powershell
+cd reaper-extension
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+cmake --build build --config Release
+\`\`\`
+
+Output: \`reaper-extension/dist/reaper_video_fx_bridge.dll\`
+
+### Run Development Server
+
+\`\`\`powershell
+cd tauri-app
+npm install
+npm run tauri dev
+\`\`\`
+
+### Build Production Installers
+
+\`\`\`powershell
+cd tauri-app
+npm install
+npm run tauri build
+\`\`\`
+
+Outputs:
+- **MSI**: \`src-tauri/target/release/bundle/msi/REAPER Video FX_1.0.0_x64_en-US.msi\`
+- **NSIS**: \`src-tauri/target/release/bundle/nsis/REAPER Video FX_1.0.0_x64-setup.exe\`
+
+## 📁 Project Structure
+
+\`\`\`
+reaper-video-fx/
+├── tauri-app/              # Tauri desktop app (Rust + React)
+│   ├── src/                # React frontend
+│   └── src-tauri/          # Rust backend
+├── reaper-extension/       # Native REAPER extension (C++)
+├── reaper-scripts/         # Lua bridge (fallback)
+└── reaper-sdk-main/        # REAPER SDK headers
+\`\`\`
+
+## 🐛 Troubleshooting
+
+### "REAPER Not Connected"
+- Ensure REAPER is running
+- Install the extension: Click "One-Click Install" or manually copy DLL
+- Restart REAPER after extension installation
+- Check \`%TEMP%\reaper-video-fx\`for \`command.json\` and \`response.json\`
+
+### Extension Not Found
+- Use the ⚙️ settings icon to manually select REAPER plugins directory
+- Default path: \`%APPDATA%\REAPER\UserPlugins\`
+
+### Video Processing Fails
+- Ensure FFmpeg is installed and in PATH
+- Check that video file is not corrupted
+- Verify REAPER track has audio items
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details
+
+---
+
+<a name="turkish"></a>
+
+# 🇹🇷 Türkçe Dökümantasyon
+
+## Özellikler
+
+REAPER içindeki FX chain'i kullanarak videoların sesini işleyen cross-platform masaüstü uygulaması.
+
+### Nasıl Çalışır?
+
+1. Videodan ses çıkarılır (FFmpeg)
+2. Ses REAPER'a yüklenir
+3. Seçilen track (üzerindeki FX'lerle) render alınır
+4. İşlenmiş ses tekrar videoya gömülür
 
 ## Kurulum (Windows)
 
-### 1) Uygulama (MSI)
+### 1. Uygulamayı Yükle
 
-- MSI çıktısı: `reaper-video-fx/electron-app/release/REAPER Video FX 1.0.0.msi`
-- İndirip çalıştır: `REAPER Video FX 1.0.0.msi`
+En son sürümü indirin:
+- **MSI**: \`REAPER Video FX_1.0.0_x64_en-US.msi\` (Önerilen)
+- **NSIS**: \`REAPER Video FX_1.0.0_x64-setup.exe\`
 
-> Not: NSIS kurulum da üretilir: `reaper-video-fx/electron-app/release/REAPER Video FX Setup 1.0.0.exe`
+### 2. REAPER Extension
 
-### 2) REAPER extension’ı kur
-
-Uygulamanın REAPER ile konuşması için native extension DLL gerekir:
-
-- DLL adı: `reaper_video_fx_bridge.dll`
-- Kaynak (repo içi): `reaper-video-fx/reaper-extension/dist/reaper_video_fx_bridge.dll`
-
-REAPER’ın plugin dizinlerinden birine kopyala (genelde en doğrusu):
-- `%APPDATA%\\REAPER\\UserPlugins\\reaper_video_fx_bridge.dll`
-
-Alternatif dizinler (REAPER kurulumuna göre):
-- `%APPDATA%\\REAPER\\Plugins\\`
-- `%LOCALAPPDATA%\\REAPER\\UserPlugins\\`
-
-Sonra REAPER’ı kapat/aç.
-
-**Extension yüklendi mi kontrol:**
-- REAPER açıldıktan sonra `Extensions` menüsünde eklentiye ait bir menü görmeyebilirsin (bu extension arka planda “timer” ile çalışır).
-- En hızlı kontrol: `npm run ping:reaper` (aşağıda).
-
-### 3) REAPER tarafını hazırla
-
-1) REAPER’ı aç.
-2) Bir track oluştur, istediğin FX chain’i o track’e ekle.
-3) Uygulamayı aç, listeden track’i seç.
-
----
+Extension otomatik kurulur, veya manuel olarak:
+- Uygulamadaki "Tek Tıkla Kur" butonuna tıklayın
+- Manuel: \`reaper_video_fx_bridge.dll\` dosyasını \`%APPDATA%\REAPER\UserPlugins\` klasörüne kopyalayın
 
 ## Kullanım
 
-1) REAPER açık kalsın.
-2) REAPER Video FX’i aç.
-3) Video seç.
-4) FX uygulanacak track’i seç.
-5) “Process” başlat.
+1. REAPER'ı açın, istediğiniz FX chain'i bir track'e ekleyin
+2. REAPER Video FX uygulamasını açın
+3. Video dosyasını seçin
+4. İşlemek istediğiniz REAPER track'i seçin
+5. "Process" butonuna tıklayın
 
-Çıktı video, giriş dosyanın yanına `*_processed.mp4` olarak kaydedilir.
+Çıktı: \`{video_adi}_processed.mp4\`
 
----
+## Ayarlar
 
-## Geliştirme (Repo’dan çalıştırma)
+⚙️ ikonu ile:
+- **REAPER Dizini**: Otomatik bulunamazsa manuel seçin
+- **Video Codec**: Varsayılan: Copy (yeniden kodlama yok)
+- **Ses Codec**: Varsayılan: AAC 320kbps
+- **Sample Rate**: Varsayılan: 48kHz
 
-### Prerequisite
+## Geliştirme
 
-- Windows 10/11
-- REAPER (test edildi: 7.49)
-- Node.js (repo/lockfile ile uyumlu)
-- FFmpeg (uygulama `fluent-ffmpeg` kullanıyor; sistemde ffmpeg erişilebilir olmalı)
+### Gereksinimler
+- Windows 10/11 (macOS ve Linux desteklenir)
+- REAPER (7.49+)
+- Node.js 18+ ve npm
+- Rust ve Cargo
+- FFmpeg (PATH'te olmalı)
+- Visual Studio 2022 Build Tools (Windows)
+- CMake
 
-### Electron dev
+### REAPER Extension Build
 
-```powershell
-cd reaper-video-fx/electron-app
-npm ci
-npm run dev
-```
-
-### REAPER bridge (native extension) build
-
-Visual Studio 2022 Build Tools / MSVC ve CMake gerekir.
-
-```powershell
-cd reaper-video-fx/reaper-extension
+\`\`\`powershell
+cd reaper-extension
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Release
-```
+\`\`\`
 
-Çıktı: `reaper-video-fx/reaper-extension/dist/reaper_video_fx_bridge.dll`
+### Uygulama Geliştirme
 
-> Uyumluluk notu: SDK header’ları yeni REAPER sürümü ile üretildiği için extension “minimal API load” ile derlenir; bu sayede daha eski REAPER sürümlerinde de açılışta takılmaz.
+\`\`\`powershell
+cd tauri-app
+npm install
+npm run tauri dev
+\`\`\`
 
----
+### Production Build
 
-## Paketleme (Installer)
+\`\`\`powershell
+cd tauri-app
+npm install
+npm run tauri build
+\`\`\`
 
-```powershell
-cd reaper-video-fx/electron-app
-npm ci
-npm run dist
-```
+## Sorun Giderme
 
-`npm run dist` otomatik olarak `build/icon.ico` üretir (MSI için gerekli).
+### "REAPER Bağlı Değil"
+- REAPER açık mı kontrol edin
+- Extension'ı kurun: "Tek Tıkla Kur" butonu
+- REAPER'ı yeniden başlatın
+- \`%TEMP%\reaper-video-fx\` klasörünü kontrol edin
 
-Çıktılar:
-- `reaper-video-fx/electron-app/release/REAPER Video FX 1.0.0.msi`
-- `reaper-video-fx/electron-app/release/REAPER Video FX Setup 1.0.0.exe`
-- `reaper-video-fx/electron-app/release/win-unpacked/`
-
----
-
-## Smoke Test / Hızlı kontrol
-
-REAPER açıkken:
-
-```powershell
-cd reaper-video-fx/electron-app
-npm run build:main
-npm run ping:reaper
-```
-
-Beklenen:
-- `{"success":true,"message":"pong"}` (native extension aktifse)
+### Extension Bulunamadı
+- ⚙️ ayarlar ikonuna tıklayın
+- "Manuel Dizin Seç" ile REAPER UserPlugins klasörünü seçin
+- Varsayılan: \`%APPDATA%\REAPER\UserPlugins\`
 
 ---
 
-## Sorun giderme
+<div align="center">
 
-### Uygulama açılmıyor / hemen kapanıyor
+**Made with ❤️ using [Tauri](https://tauri.app) + [React](https://react.dev) + [Rust](https://rust-lang.org)**
 
-- Sistem ortam değişkenlerinde `ELECTRON_RUN_AS_NODE=1` varsa Electron uygulamaları GUI açmadan çıkabilir. Bu değişkeni kaldırıp tekrar dene.
-
-### “REAPER yanıt vermedi (timeout)”
-
-- REAPER açık mı?
-- `reaper_video_fx_bridge.dll` doğru dizinde mi ve REAPER yeniden başlatıldı mı?
-- `%TEMP%\\reaper-video-fx` altında `command.json/response.json` oluşuyor mu?
-
-### Render “yanlış yerden” alıyor gibi
-
-Bridge, hedef track dışındaki track’leri geçici olarak mute eder ve time selection üzerinden render alır. Proje render ayarlarını ve time selection davranışını kontrol et.
-
----
-
-## Klasör yapısı
-
-- `reaper-video-fx/electron-app`: Electron main + renderer (Vite/React)
-- `reaper-video-fx/reaper-extension`: REAPER SDK ile native bridge DLL
-- `reaper-video-fx/reaper-scripts`: Lua bridge (fallback)
-- `reaper-video-fx/reaper-sdk-main`: REAPER SDK snapshot (vendor)
+</div>
