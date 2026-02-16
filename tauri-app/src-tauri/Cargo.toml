@@ -1,6 +1,6 @@
 [package]
 name = "reaper-video-fx"
-version = "1.0.0"
+version = "1.0.1"
 description = "REAPER Video FX - Video ses isleme uygulamasi"
 authors = ["REAPER Video FX"]
 edition = "2021"

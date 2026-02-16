@@ -4,11 +4,13 @@
 
 <div align="center">
 
-![REAPER Video FX](screenshots/app-screenshot.png)
+![REAPER Video FX Logo](assets/logo.svg)
 
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)](https://github.com/er2g/reaper-video-fx)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri-orange)](https://tauri.app)
+[![Release](https://img.shields.io/github/v/release/er2g/reaper-video-fx?display_name=tag)](https://github.com/er2g/reaper-video-fx/releases/latest)
+[![Release Workflow](https://github.com/er2g/reaper-video-fx/actions/workflows/release.yml/badge.svg)](https://github.com/er2g/reaper-video-fx/actions/workflows/release.yml)
 
 [Features](#features) • [Installation](#installation) • [Usage](#usage) • [Development](#development) • [Türkçe](#turkish)
 
@@ -38,8 +40,8 @@
 
 Download and install the latest release:
 
-- **MSI Installer**: \`REAPER Video FX_1.0.0_x64_en-US.msi\` (Recommended)
-- **NSIS Installer**: \`REAPER Video FX_1.0.0_x64-setup.exe\`
+- **MSI Installer**: \`REAPER Video FX_x.y.z_x64_en-US.msi\` (Recommended)
+- **NSIS Installer**: \`REAPER Video FX_x.y.z_x64-setup.exe\`
 
 **REAPER Extension** will be installed automatically on first run, or you can:
 - Click the "One-Click Install" button in the app
@@ -50,6 +52,8 @@ Download and install the latest release:
 Build from source (see [Development](#development) section)
 
 ## 🚀 Usage
+
+![REAPER Video FX App](screenshots/app-screenshot.png)
 
 1. **Launch REAPER** with your desired FX chain on a track
 2. **Open REAPER Video FX** application
@@ -106,8 +110,23 @@ npm run tauri build
 \`\`\`
 
 Outputs:
-- **MSI**: \`src-tauri/target/release/bundle/msi/REAPER Video FX_1.0.0_x64_en-US.msi\`
-- **NSIS**: \`src-tauri/target/release/bundle/nsis/REAPER Video FX_1.0.0_x64-setup.exe\`
+- **MSI**: \`src-tauri/target/release/bundle/msi/REAPER Video FX_x.y.z_x64_en-US.msi\`
+- **NSIS**: \`src-tauri/target/release/bundle/nsis/REAPER Video FX_x.y.z_x64-setup.exe\`
+
+### Automated Releases (GitHub Actions)
+
+Push a semantic version tag to create a GitHub Release automatically:
+
+\`\`\`bash
+git tag v1.0.1
+git push origin v1.0.1
+\`\`\`
+
+The workflow builds:
+- REAPER extension DLL
+- Tauri Windows installers (MSI + NSIS)
+
+and uploads them to the matching GitHub Release.
 
 ## 📁 Project Structure
 
@@ -168,8 +187,8 @@ REAPER içindeki FX chain'i kullanarak videoların sesini işleyen cross-platfor
 ### 1. Uygulamayı Yükle
 
 En son sürümü indirin:
-- **MSI**: \`REAPER Video FX_1.0.0_x64_en-US.msi\` (Önerilen)
-- **NSIS**: \`REAPER Video FX_1.0.0_x64-setup.exe\`
+- **MSI**: \`REAPER Video FX_x.y.z_x64_en-US.msi\` (Önerilen)
+- **NSIS**: \`REAPER Video FX_x.y.z_x64-setup.exe\`
 
 ### 2. REAPER Extension
 

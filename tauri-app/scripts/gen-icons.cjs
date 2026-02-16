@@ -1,50 +1,24 @@
 #!/usr/bin/env node
-/**
- * Simple icon generator for Tauri app
- * Creates minimal valid PNG icons
- */
+/* Generate Tauri icons from assets/logo-mark.png */
 
-const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
-const iconsDir = path.join(__dirname, '../src-tauri/icons');
+const repoRoot = path.join(__dirname, '..', '..');
+const iconsDir = path.join(repoRoot, 'tauri-app', 'src-tauri', 'icons');
+const source = path.join(repoRoot, 'assets', 'logo-mark.png');
 
-if (!fs.existsSync(iconsDir)) {
-  fs.mkdirSync(iconsDir, { recursive: true });
+function run(cmd) {
+  execSync(cmd, { stdio: 'inherit' });
 }
 
-// Pre-generated minimal valid 32x32 cyan PNG
-// Created using proper PNG encoding
-const png32 = Buffer.from(
-  '89504e470d0a1a0a0000000d494844520000002000000020080200000' +
-  '0fc18eda40000006049444154789c62fccfc0f01f0a8019c6f8000a60' +
-  '86318e010628c0186708038c710c30c618c70003c4388602180000032' +
-  '400015b02a0bd0000000049454e44ae426082',
-  'hex'
-);
-
-// Pre-generated minimal valid 128x128 cyan PNG
-const png128 = Buffer.from(
-  '89504e470d0a1a0a0000000d494844520000008000000080080200000' +
-  '04c5cf45000000147494441547801ed' +
-  'c1010d000000c2a0f74f6d0e37a00000000000000000000000000000' +
-  '000038770395000102d35e64470000000049454e44ae426082',
-  'hex'
-);
-
-// Create all required icon files
-const icons = {
-  '32x32.png': png32,
-  '128x128.png': png128,
-  '128x128@2x.png': png128, // Same as 128, systems will scale
-  'icon.icns': png128,      // Placeholder, macOS will handle
-  'icon.ico': png32         // Placeholder, Windows will handle
-};
-
-for (const [name, data] of Object.entries(icons)) {
-  fs.writeFileSync(path.join(iconsDir, name), data);
-  console.log(`Created ${name}`);
+try {
+  run(`convert "${source}" -resize 32x32 "${path.join(iconsDir, '32x32.png')}"`);
+  run(`convert "${source}" -resize 128x128 "${path.join(iconsDir, '128x128.png')}"`);
+  run(`convert "${source}" -resize 256x256 "${path.join(iconsDir, '128x128@2x.png')}"`);
+  run(`python3 -c "from PIL import Image; b=Image.open(r'${source}').convert('RGBA'); b.save(r'${path.join(iconsDir, 'icon.ico')}', sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)]); b.resize((512,512), Image.Resampling.LANCZOS).save(r'${path.join(iconsDir, 'icon.icns')}', format='ICNS')"`); // eslint-disable-line max-len
+  console.log('Icons generated successfully.');
+} catch (error) {
+  console.error('Failed to generate icons. Ensure ImageMagick (convert) and Python Pillow are installed.');
+  process.exit(1);
 }
-
-console.log('\\nIcons generated successfully!');
-console.log('Note: These are placeholder icons. Replace with actual icons for production.');

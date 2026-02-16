@@ -1,0 +1,19 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="110" x2="880" y2="910" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1220"/>
+      <stop offset="1" stop-color="#101B31"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="260" y1="250" x2="770" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10BCE8"/>
+      <stop offset="1" stop-color="#38D39F"/>
+    </linearGradient>
+  </defs>
+  <rect x="72" y="72" width="880" height="880" rx="180" fill="url(#bg)"/>
+  <rect x="232" y="240" width="560" height="170" rx="48" fill="url(#accent)"/>
+  <line x1="305" y1="260" x2="390" y2="390" stroke="#E6FAFF" stroke-width="24" stroke-linecap="round"/>
+  <line x1="468" y1="260" x2="553" y2="390" stroke="#E6FAFF" stroke-width="24" stroke-linecap="round"/>
+  <line x1="631" y1="260" x2="716" y2="390" stroke="#E6FAFF" stroke-width="24" stroke-linecap="round"/>
+  <rect x="232" y="430" width="560" height="350" rx="60" fill="#12213C"/>
+  <path d="M288 625C330 535 372 535 414 625C456 715 498 715 540 625C582 535 624 535 666 625C708 715 750 715 792 625" stroke="url(#accent)" stroke-width="30" stroke-linecap="round" fill="none"/>
+</svg>

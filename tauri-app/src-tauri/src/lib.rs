@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use tauri::Emitter;
 use uuid::Uuid;
 
@@ -126,17 +126,10 @@ async fn send_reaper_command(command: serde_json::Value) -> Result<ReaperRespons
     let command_json = serde_json::to_string(&command).map_err(|e| e.to_string())?;
     fs::write(&command_file, &command_json).map_err(|e| e.to_string())?;
 
-    // Wait for response with timeout
-    let start = Instant::now();
-    let timeout = Duration::from_secs(60);
+    // Wait for response (no timeout)
 
     loop {
         tokio::time::sleep(Duration::from_millis(100)).await;
-
-        if start.elapsed() > timeout {
-            cleanup_files();
-            return Err("REAPER yanit vermedi (timeout)".to_string());
-        }
 
         if response_file.exists() {
             match fs::read_to_string(&response_file) {

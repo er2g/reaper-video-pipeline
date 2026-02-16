@@ -1,8 +1,26 @@
 #!/bin/bash
-# Create minimal valid 1x1 PNG (cyan color)
-# This is a valid PNG that systems can scale
-printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\xcf\xc0\x00\x00\x00\x03\x00\x01\x00\x05\xfe\xd4\xb4\x00\x00\x00\x00IEND\xaeB`\x82' > 32x32.png
-cp 32x32.png 128x128.png
-cp 32x32.png "128x128@2x.png"
-cp 32x32.png icon.icns
-cp 32x32.png icon.ico
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+SOURCE_ICON="${ROOT_DIR}/assets/logo-mark.png"
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+if [[ ! -f "${SOURCE_ICON}" ]]; then
+  echo "Missing source icon: ${SOURCE_ICON}"
+  exit 1
+fi
+
+convert "${SOURCE_ICON}" -resize 32x32 32x32.png
+convert "${SOURCE_ICON}" -resize 128x128 128x128.png
+convert "${SOURCE_ICON}" -resize 256x256 "128x128@2x.png"
+
+python3 - <<'PY'
+from PIL import Image
+
+base = Image.open("../../../assets/logo-mark.png").convert("RGBA")
+base.save("icon.ico", sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)])
+base.resize((512, 512), Image.Resampling.LANCZOS).save("icon.icns", format="ICNS")
+print("Generated icon.ico and icon.icns")
+PY
+
+echo "Icons generated from assets/logo-mark.png"
